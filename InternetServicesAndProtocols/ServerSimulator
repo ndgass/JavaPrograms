@@ -1,0 +1,238 @@
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.StringTokenizer;
+
+public class Server {
+	
+	static DataOutputStream outToClient;
+	
+	public static void main(String[] args) {
+		String clientInput;
+		
+		//open TCP socket
+		ServerSocket welcomeSocket;
+		try{
+			welcomeSocket = new ServerSocket(14101);
+		} catch(IllegalArgumentException e){
+			System.out.println("ERROR -- Bind Error.");
+			return;
+		} catch(IOException e){
+			System.out.println("ERROR -- Bind Error.");
+			return;
+		}
+
+		while(true){
+			try{
+				//interface with socket
+				Socket connectionSocket = welcomeSocket.accept();
+				BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+				outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+				//take user input
+				clientInput = inFromClient.readLine();
+				//call parse on it
+				parse(clientInput);
+				//echo output to TCP socket
+				//Error Socket Read/WRite
+				connectionSocket.close();
+				inFromClient.close();
+				outToClient.close();
+			} catch(IOException e){
+				System.out.println("ERROR -- Socket Read/Write failed.");
+			}
+		}
+	
+	}
+	
+	//The parse program copied into this one, as per the professor's requirements (to make submission simpler, only two files).
+	static void parse(String inputline)throws IOException{
+
+
+		String token, token1, token2, token3, token4;
+
+
+		StringTokenizer tokenizedLine = new StringTokenizer(inputline, " \t", true);
+
+		if(!tokenizedLine.hasMoreTokens()){
+			outToClient.writeBytes("\n");
+			System.out.println("ERROR -- Parse Error.");
+			outToClient.writeBytes("ERROR -- Invalid Method token." + "\n");
+			return; 
+		}
+
+		if(tokenizedLine.countTokens() > 2){
+
+			token = tokenizedLine.nextToken();
+			while(token.contentEquals(" ") || token.contentEquals("\t")){
+				outToClient.writeBytes(token);
+				token = tokenizedLine.nextToken();
+			}
+			token1 = token;
+			outToClient.writeBytes(token1);
+
+			token = tokenizedLine.nextToken();
+			while(token.contentEquals(" ") || token.contentEquals("\t") || token.startsWith("HTTP")){
+				if(token.startsWith("HTTP")){
+					outToClient.writeBytes(token);
+					outToClient.writeBytes("ERROR -- Invalid Absolute-Path token."  + "\n");
+					System.out.println("ERROR -- Parse Error.");
+					return;
+				}
+				else{
+					outToClient.writeBytes(token);
+					token = tokenizedLine.nextToken();
+				}
+			}
+			token2 = token;
+			outToClient.writeBytes(token2);
+
+			token = tokenizedLine.nextToken();
+			while(token.contentEquals(" ") || token.contentEquals("\t")){
+				outToClient.writeBytes(token);
+				token = tokenizedLine.nextToken();
+			}
+			token3 = token;
+			outToClient.writeBytes(token3);
+
+			if(token1.equals("GET")){
+				if(urlChecker(token2)){
+					if(token3.contains("HTTP/") && token3.contains(".")){
+						while(tokenizedLine.hasMoreTokens() ){
+							token = tokenizedLine.nextToken();
+							outToClient.writeBytes(token);
+							if((!token.equals(" ")) && (!token.equals("\t"))){
+								outToClient.writeBytes("\n");
+								outToClient.writeBytes("ERROR -- Spurious token before CRLF."  + "\n");
+								System.out.println("ERROR -- Parse Error.");
+								return;
+							}
+						}
+						
+						outToClient.writeBytes("\n");
+
+						outToClient.writeBytes("Method = " + token1 + "\n");
+
+						outToClient.writeBytes("Request-URL = " + token2 + "\n");
+
+						outToClient.writeBytes("HTTP-Version = " + token3 + "\n");
+
+						if(token2.endsWith(".txt") || token2.endsWith(".htm") || token2.endsWith(".html")){
+
+							token4 = token2;
+							
+							if(token2.startsWith("/")){
+								token4 = token2.substring(1);
+							}
+							
+							BufferedReader reader = null;
+							
+							try {
+								
+								reader = new BufferedReader(new FileReader(token4));
+
+								String input;
+
+								input = reader.readLine();
+
+								while(input != null){
+
+									outToClient.writeBytes(input + "\n");
+
+									input = reader.readLine();
+
+								}
+
+
+							} catch (FileNotFoundException e) {
+								//System.out.println("404 Not Found: " + token2);
+								outToClient.writeBytes("404 Not Found: " + token2  + "\n");
+								System.out.println("ERROR -- Parse Error.");
+
+							} catch (IOException e) {
+								//System.out.println("ERROR: " + e.getLocalizedMessage());
+								System.out.println("ERROR -- Parse Error.");
+								outToClient.writeBytes("ERROR: " + e.getLocalizedMessage()  + "\n");
+
+								e.printStackTrace();
+
+							} finally {
+								if(reader != null){
+									reader.close();
+								}
+							}
+
+						}
+
+						else{
+							//System.out.println("501 Not Implemented: " + token2);
+							System.out.println("ERROR -- Parse Error.");
+							outToClient.writeBytes("501 Not Implemented: " + token2  + "\n");
+
+						}
+
+
+
+					}
+
+					else{
+						while(tokenizedLine.hasMoreTokens()){
+							token = tokenizedLine.nextToken();
+							outToClient.writeBytes(token);
+						}
+						outToClient.writeBytes("\n");
+						outToClient.writeBytes("ERROR -- Invalid HTTP-Version token."  + "\n");
+						System.out.println("ERROR -- Parse Error.");
+					}
+
+				}
+
+				else{
+					outToClient.writeBytes("\n");
+					outToClient.writeBytes("ERROR -- Invalid Absolute-Path token."  + "\n");
+					System.out.println("ERROR -- Parse Error.");
+				}
+
+			}
+
+			else{
+				outToClient.writeBytes("\n");
+				outToClient.writeBytes("ERROR -- Invalid Method token."  + "\n");
+				System.out.println("ERROR -- Parse Error.");
+			}
+
+		}
+
+	}
+
+
+
+	public static boolean urlChecker(String url){
+
+		if(url.charAt(0) != '/'){
+			return false;
+		}
+
+		for(int i = 0; i < url.length(); i++){
+
+			char c = url.charAt(i);
+
+			if(c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '.' && c <= '9')){
+
+				return true;
+
+			}
+
+		}
+
+		return false;
+
+	}
+
+}
+
