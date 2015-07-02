@@ -1,0 +1,82 @@
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+public class Client {
+
+	public static void main(String[] args) {
+		
+
+		String input;
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+		
+
+		try {
+
+			input = reader.readLine();
+
+			while(input!= null){
+				
+				Socket clientSocket;
+				DataOutputStream outToServer;
+				BufferedReader inFromServer;
+				
+				try{
+					//make socket
+					clientSocket = new Socket("classroom.cs.unc.edu", 14101);
+					//create output stream for socket
+					outToServer = new DataOutputStream(clientSocket.getOutputStream());
+					//create receiving stream from socket
+					inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+				} catch(UnknownHostException e){
+					System.out.println("ERROR -- Connection Error.");
+					return;
+				} catch(IllegalArgumentException e){
+					System.out.println("ERROR -- Connection Error.");
+					return;
+				} catch(SecurityException e){
+					System.out.println("ERROR -- Connection Error.");
+					return;
+				} catch(IOException e){
+					System.out.println("ERROR -- Connection Error.");
+					return;
+				}
+				
+				try{
+					String response;
+					//Send to TCP
+					outToServer.writeBytes(input + '\n');
+					//Recieve from TCP and print
+					response = inFromServer.readLine();
+					while(response != null){
+						System.out.println(response);
+						response = inFromServer.readLine();
+					}
+					
+				} catch (IOException e){
+					System.out.println("ERROR -- Socket Read/Write failed.");
+					clientSocket.close();
+					return;
+				}
+				
+				clientSocket.close();
+				input = reader.readLine();
+				System.out.println();
+
+			}
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+	}
+
+}
