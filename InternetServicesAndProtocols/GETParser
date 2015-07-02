@@ -1,0 +1,216 @@
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.StringTokenizer;
+
+
+
+public class Parse {
+
+//A small program to parse GET requests and determine if they are valid. Certain restrictions were placed on what functions and methods we could use.
+
+	public static void main(String[] args) {
+
+
+		String input;
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+		try {
+
+			input = reader.readLine();
+
+			while(input!= null){
+
+				Parse.parse(input);
+
+				input = reader.readLine();
+
+			}
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+
+
+
+	}
+
+
+
+	static void parse(String inputline){
+
+
+		String token, token1, token2, token3, token4;
+
+    //Tokenizes line
+		StringTokenizer tokenizedLine = new StringTokenizer(inputline, " \t", true);
+
+    //Makes sure the line isn't empty
+		if(!tokenizedLine.hasMoreTokens()){
+			System.out.println();
+			System.out.println("ERROR -- Invalid Method token.");
+			System.out.println();
+			return; 
+		}
+		
+		//Tokenizes the first three tokens and only them. Tokens are seperated by a blankspace (" ") or newline ("\t")
+		if(tokenizedLine.countTokens() > 2){
+		
+			token = tokenizedLine.nextToken();
+			while(token.contentEquals(" ") || token.contentEquals("\t")){
+				System.out.print(token);
+				token = tokenizedLine.nextToken();
+			}
+			token1 = token;
+			System.out.print(token1);
+
+			token = tokenizedLine.nextToken();
+			while(token.contentEquals(" ") || token.contentEquals("\t")){
+				System.out.print(token);
+				token = tokenizedLine.nextToken();
+			}
+			token2 = token;
+			System.out.print(token2);
+
+			token = tokenizedLine.nextToken();
+			while(token.contentEquals(" ") || token.contentEquals("\t")){
+				System.out.print(token);
+				token = tokenizedLine.nextToken();
+			}
+			token3 = token;
+			System.out.print(token3);
+
+      //Parses each token to make sure it follows the correct syntax (GET + FILE + HTTP VERSION). If not, prints out what failed.
+			if(token1.equals("GET")){
+				if(urlChecker(token2)){
+					if(token3.contains("HTTP/") && token3.contains(".")){
+						while(tokenizedLine.hasMoreTokens() ){
+							token = tokenizedLine.nextToken();
+							System.out.print(token);
+							if((!token.equals(" ")) && (!token.equals("\t"))){
+								System.out.println();
+								System.out.println("ERROR -- Spurious token before CRLF.");
+								System.out.println();
+								return;
+							}
+						}
+
+						System.out.println();
+						System.out.println("Method = " + token1);
+
+						System.out.println("Request-URL = " + token2);
+
+						System.out.println("HTTP-Version = " + token3);
+
+						if(token2.endsWith(".txt") || token2.endsWith(".htm") || token2.endsWith(".html")){
+
+							try {
+
+								String input;
+								
+								token4 = token2;
+
+								if(token2.startsWith("/")){
+									token4 = token2.substring(1);
+								}
+
+								BufferedReader reader = new BufferedReader(new FileReader(token4));
+
+								input = reader.readLine();
+
+								while(input != null){
+
+									System.out.println(input);
+
+									input = reader.readLine();
+
+								}
+
+							} catch (FileNotFoundException e) {
+								System.out.println("404 Not Found: " + token2);
+
+							} catch (IOException e) {
+
+								System.out.println("ERROR: " + e.getLocalizedMessage());
+
+								e.printStackTrace();
+
+							}
+
+						}
+
+						else{
+							System.out.println("501 Not Implemented: " + token2);
+
+						}
+
+
+
+					}
+
+					else{
+						while(tokenizedLine.hasMoreTokens()){
+							token = tokenizedLine.nextToken();
+							System.out.print(token);
+						}
+						System.out.println();
+						System.out.println("ERROR -- Invalid HTTP-Version token.");
+
+					}
+
+				}
+
+				else{
+					System.out.println();
+					System.out.println("ERROR -- Invalid Absolute-Path token.");
+
+				}
+
+			}
+
+			else{
+				System.out.println();
+				System.out.println("ERROR -- Invalid Method token.");
+
+			}
+
+		}
+		System.out.println();
+
+	}
+
+
+
+  //Makes sure the URL is valid.
+	public static boolean urlChecker(String url){
+
+		if(url.charAt(0) != '/'){
+			return false;
+		}
+
+		for(int i = 0; i < url.length(); i++){
+
+			char c = url.charAt(i);
+
+			if(c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '.' && c <= '9')){
+
+				return true;
+
+			}
+
+		}
+
+		return false;
+
+	}
+
+
+
+}
+
