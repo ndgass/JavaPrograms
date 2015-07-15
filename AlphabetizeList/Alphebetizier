@@ -1,0 +1,78 @@
+package athenaQuizGass;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class QuizImplementation {
+
+	public static void main(String[] args) throws IOException {
+
+
+		//Take string input
+		String input;
+		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+		input = reader.readLine();
+		int length = input.length();
+		
+		if(length == 1){
+			System.out.println("Already sorted. Place one of one.");
+			return;
+		}
+
+
+		//Turn 'input' into array of ints (where int value is equal to the char's ASCII value) for easier alphebetizing
+		int[] word = new int[length];
+		for(int i = 0; i < length; i++){
+			word[i] = (int) input.charAt(i);
+		}
+
+
+		//Now we'll create a separate sorted array of those letters. This will be the tree reference.
+		int[] sortedWord = new int[length];
+		for(int i = 0; i < length; i++){
+			sortedWord[i] = (int) input.charAt(i);
+		}
+		int temp, sorted = 0;
+		while(sorted < length){
+			int n = sorted, smallest = sorted;
+			while(n < length){
+				if(sortedWord[n] < sortedWord[smallest]){
+					smallest = n;
+				}
+				n++;
+			}
+			temp = sortedWord[smallest];
+			sortedWord[sorted] = sortedWord[smallest];
+			sortedWord[smallest] = temp;
+			sorted++;
+		}
+
+		//Now we'll use this referenced array above to traverse the tree in a loop until we reach a terminal node.
+		//This implementation isn't necessarily the fastest, but it's pretty easy to follow conceptually.
+		//It's also pretty compact.
+		int place = 1, choice;
+		for(int i = 0; i < length; i++){
+			int n = 0;
+			while(word[n] != sortedWord[i]){
+				n++;
+			} 
+			choice = n;
+			place = place + ( Factorial(length - i) * (choice) / (length - i) );
+		}
+
+
+		//Now to just print the output. 
+		System.out.println("The inputted word is " + place + " in the list out of " + Factorial(length) +" total places." ); 
+
+	}
+
+	public static int Factorial(int n){
+		int fact = 1; // this  will be the result
+		for (int i = 1; i <= n; i++) {
+			fact *= i;
+		}
+		return fact;
+	}
+
+}
