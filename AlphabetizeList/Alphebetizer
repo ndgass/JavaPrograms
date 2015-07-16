@@ -8,6 +8,9 @@ public class QuizImplementation {
 
 	public static void main(String[] args) throws IOException {
 
+		//Starts timing the program's execution time.
+		long startTime = System.nanoTime();
+		
 		
 		//Take string input from command line.
 		String input = args[0];
@@ -33,7 +36,8 @@ public class QuizImplementation {
 		
 		//Now we'll use this referenced array above to traverse the tree in a loop until we reach a terminal node.
 		//This implementation isn't necessarily the fastest, but it's pretty easy to follow conceptually. It's also pretty compact.
-		int place = 1, choice = 0;
+		int choice = 0;
+		long place = 1;
 		for(int i = 0; i < length - 1; i++){
 			int n = 0;
 			while(!word.get(i).equals(sortedWord.get(n))){
@@ -48,8 +52,13 @@ public class QuizImplementation {
 		}
 
 
-		//Now to just print the output. 
-		System.out.println("The inputted word is " + place); 
+		//Now to just print the output.
+		System.out.println("The inputted word is " + place + " in the alphabetically sorted list of all words made of the same finite multiset of letters.");
+		
+		//Ends timer, prints out time.
+		long endTime = System.nanoTime();
+		long time = endTime - startTime;
+		System.out.println("...and it ran in " + time / 1000000 + " milliseconds.");
 
 	}
 
@@ -64,8 +73,8 @@ public class QuizImplementation {
 	
 	//An also pretty simple function to compute the multiset permutation: 
 	//https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets
-	public static int multiset(int total, int[] repeats){
-		int multiset = factorial(total);
+	public static long multiset(int total, int[] repeats){
+		long multiset = factorial(total);
 		for(int i = 0; i < repeats.length; i++){
 			multiset = multiset / factorial(repeats[i]);
 		}
