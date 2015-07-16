@@ -12,9 +12,7 @@ public class QuizImplementation {
 
 
 		//Take string input
-		String input;
-		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-		input = reader.readLine();
+		String input = args[0];
 		int length = input.length();
 		
 		//Catch the mistake of one.
