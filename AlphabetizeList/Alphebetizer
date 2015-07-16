@@ -17,6 +17,7 @@ public class QuizImplementation {
 		input = reader.readLine();
 		int length = input.length();
 		
+		//Catch the mistake of one.
 		if(length == 1){
 			System.out.println("Already sorted. Place one of one.");
 			return;
@@ -26,15 +27,19 @@ public class QuizImplementation {
 		//Turn 'input' into array of ints (where int value is equal to the char's ASCII value) for easier alphebetizing
 		ArrayList<Integer> word = new ArrayList<Integer>();
 		ArrayList<Integer> sortedWord = new ArrayList<Integer>();
+		int[] repeats = new int[26];
 		for(int i = 0; i < length; i++){
 			word.add(new Integer(input.charAt(i)));
 			sortedWord.add(new Integer(input.charAt(i)));
+			repeats[input.charAt(i) - 65]++;
 		}
 
 
+		
 		//Now we'll create a separate sorted array of those letters. This will be the tree reference.
 		Collections.sort(sortedWord);
 
+		
 		//Now we'll use this referenced array above to traverse the tree in a loop until we reach a terminal node.
 		//This implementation isn't necessarily the fastest, but it's pretty easy to follow conceptually.
 		//It's also pretty compact.
@@ -43,24 +48,36 @@ public class QuizImplementation {
 			int n = 0;
 			while(!word.get(i).equals(sortedWord.get(n))){
 				n++;
-			} 
+			}
 			choice = n;
-			place = place + ( factorial(length - i) * (choice) / (length - i) );
+			//
+			place = place + ( multiset(length - i - 1, repeats) * (choice) );
 			sortedWord.remove(n);
+			repeats[word.get(i) - 65]--;
 		}
 
 
 		//Now to just print the output. 
-		System.out.println("The inputted word is " + place + " in the list out of " + factorial(length) +" total places." ); 
+		System.out.println("The inputted word is " + place); 
 
 	}
 
+	//
 	public static int factorial(int n){
 		int fact = 1; // this  will be the result
 		for (int i = 1; i <= n; i++) {
 			fact *= i;
 		}
 		return fact;
+	}
+	
+	//
+	public static int multiset(int total, int[] repeats){
+		int multiset = factorial(total);
+		for(int i = 0; i < repeats.length; i++){
+			multiset = multiset / factorial(repeats[i]);
+		}
+		return multiset;
 	}
 
 }
