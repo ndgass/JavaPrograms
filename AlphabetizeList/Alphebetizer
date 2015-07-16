@@ -1,8 +1,11 @@
+package athenaQuizGass;
+
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class AlphabetizeList {
+public class QuizImplementation {
 
 	public static void main(String[] args) throws IOException {
 
@@ -34,18 +37,22 @@ public class AlphabetizeList {
 		
 		//Now we'll use this referenced array above to traverse the tree in a loop until we reach a terminal node.
 		//This implementation isn't necessarily the fastest, but it's pretty easy to follow conceptually. It's also pretty compact.
-		int choice = 0;
-		long place = 1;
+		BigInteger choice = new BigInteger("0");
+		BigInteger place = new BigInteger("1");
+		BigInteger one = new BigInteger("1");
+		//Due to the size of some computations, BigInteger is necessary over the primitive long data type. With
+		//BigInteger, the input can be of any size and it should still compute accurately. The downside is a slight
+		//performance and readability hit.
 		for(int i = 0; i < length - 1; i++){
-			int n = 0;
-			while(!word.get(i).equals(sortedWord.get(n))){
-				n++;
+			BigInteger n = new BigInteger("0");
+			while(!word.get(i).equals(sortedWord.get(n.intValue()))){
+				n = n.add(one);
 			}
 			choice = n;
 			//Choice tells us which bucket we've 'chosen' based on what the current letter's order is vs what it should be.
 			//Info on multiset problems: https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets
-			place = place + ( multiset(length - i - 1, repeats) * (choice) );
-			sortedWord.remove(n);
+			place = place.add(multiset(length - i - 1, repeats).multiply(choice));
+			sortedWord.remove(n.intValue());
 			repeats[word.get(i) - 65]--;
 		}
 
@@ -61,20 +68,21 @@ public class AlphabetizeList {
 	}
 
 	//A simple function to compute factorial. Non-recursive.
-	public static int factorial(int n){
-		int fact = 1;
-		for (int i = 1; i <= n; i++) {
-			fact *= i;
+	public static BigInteger factorial(int n){
+		BigInteger fact = new BigInteger("1");
+		for (Integer i = 1; i <= n; i++) {
+			BigInteger iproxy = new BigInteger(i.toString());
+			fact = fact.multiply(iproxy);
 		}
 		return fact;
 	}
 	
 	//An also pretty simple function to compute the multiset permutation: 
 	//https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets
-	public static long multiset(int total, int[] repeats){
-		long multiset = factorial(total);
+	public static BigInteger multiset(int total, int[] repeats){
+		BigInteger multiset = factorial(total);
 		for(int i = 0; i < repeats.length; i++){
-			multiset = multiset / factorial(repeats[i]);
+			multiset = multiset.divide(factorial(repeats[i]));
 		}
 		return multiset;
 	}
