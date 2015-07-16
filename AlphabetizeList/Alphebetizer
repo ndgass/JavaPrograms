@@ -1,8 +1,6 @@
 package athenaQuizGass;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -10,37 +8,31 @@ public class QuizImplementation {
 
 	public static void main(String[] args) throws IOException {
 
-
-		//Take string input
+		
+		//Take string input from command line.
 		String input = args[0];
 		int length = input.length();
 		
-		//Catch the mistake of one.
-		if(length == 1){
-			System.out.println("Already sorted. Place one of one.");
-			return;
-		}
 
-
-		//Turn 'input' into array of ints (where int value is equal to the char's ASCII value) for easier alphebetizing
+		//Turn 'input' into array of Integers (where Integer value is equal to the char's ASCII value) for easier alphabetization.
 		ArrayList<Integer> word = new ArrayList<Integer>();
 		ArrayList<Integer> sortedWord = new ArrayList<Integer>();
 		int[] repeats = new int[26];
 		for(int i = 0; i < length; i++){
+			//Fills two arraylists with the word. Immediately below, we'll sort 'sortedWord.'
+			//The 'repeats' array keeps track of what letters repeat, an important key for the multiset mathematics to work.
 			word.add(new Integer(input.charAt(i)));
 			sortedWord.add(new Integer(input.charAt(i)));
 			repeats[input.charAt(i) - 65]++;
 		}
 
 
-		
-		//Now we'll create a separate sorted array of those letters. This will be the tree reference.
+		//Now we'll create a separate sorted array of those letters. This will be our reference to traverse the tree.
 		Collections.sort(sortedWord);
 
 		
 		//Now we'll use this referenced array above to traverse the tree in a loop until we reach a terminal node.
-		//This implementation isn't necessarily the fastest, but it's pretty easy to follow conceptually.
-		//It's also pretty compact.
+		//This implementation isn't necessarily the fastest, but it's pretty easy to follow conceptually. It's also pretty compact.
 		int place = 1, choice = 0;
 		for(int i = 0; i < length - 1; i++){
 			int n = 0;
@@ -48,7 +40,8 @@ public class QuizImplementation {
 				n++;
 			}
 			choice = n;
-			//
+			//Choice tells us which bucket we've 'chosen' based on what the current letter's order is vs what it should be.
+			//Info on multiset problems: https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets
 			place = place + ( multiset(length - i - 1, repeats) * (choice) );
 			sortedWord.remove(n);
 			repeats[word.get(i) - 65]--;
@@ -60,16 +53,17 @@ public class QuizImplementation {
 
 	}
 
-	//
+	//A simple function to compute factorial. Non-recursive.
 	public static int factorial(int n){
-		int fact = 1; // this  will be the result
+		int fact = 1;
 		for (int i = 1; i <= n; i++) {
 			fact *= i;
 		}
 		return fact;
 	}
 	
-	//
+	//An also pretty simple function to compute the multiset permutation: 
+	//https://en.wikipedia.org/wiki/Permutation#Permutations_of_multisets
 	public static int multiset(int total, int[] repeats){
 		int multiset = factorial(total);
 		for(int i = 0; i < repeats.length; i++){
